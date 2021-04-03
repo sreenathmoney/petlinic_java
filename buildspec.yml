@@ -1,0 +1,20 @@
+image: node:latest
+
+pipelines:
+  default:
+      - step:
+          services:
+            - docker
+          script:
+            - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            - unzip awscliv2.zip
+            - ./aws/install
+            - aws --version
+            - npm install
+            - aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
+            - aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
+            - aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 024312279465.dkr.ecr.us-east-2.amazonaws.com
+            - aws ecr create-repository  --repository-name new
+            - docker build -t new .
+            - docker tag new:latest 024312279465.dkr.ecr.us-east-2.amazonaws.com/new:latest
+            - docker push 024312279465.dkr.ecr.us-east-2.amazonaws.com/new:latest
